@@ -1,78 +1,173 @@
-import { useSignIn } from "@clerk/clerk-expo";
-import { Link, useRouter } from "expo-router";
+import React from "react";
 import {
+  View,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
   StyleSheet,
 } from "react-native";
-import React from "react";
-import type { Href } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useSignIn, useOAuth } from "@clerk/clerk-expo";
+import { Link, useRouter } from "expo-router";
+import { makeRedirectUri } from "expo-auth-session";
 
 export default function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = React.useState("");
+  const googleOAuth = useOAuth({ strategy: "oauth_google" });
+  const microsoftOAuth = useOAuth({ strategy: "oauth_microsoft" });
+
+  const redirectUrl = makeRedirectUri({
+    scheme: "myapp",
+    path: "/oauth-native-callback",
+  });
+
+  const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [remember, setRemember] = React.useState(true);
+  const [authError, setAuthError] = React.useState<string | null>(null);
+  const [oauthError, setOauthError] = React.useState<string | null>(null);
+
+  const onOAuthPress = async (oauth: any) => {
+    try {
+      const { createdSessionId, setActive } =
+        await oauth.startOAuthFlow({ redirectUrl });
+
+      if (createdSessionId) {
+        await setActive({ session: createdSessionId });
+        router.replace("/");
+      }
+    } catch (e) {
+      console.error(e);
+      setOauthError("Sign in with provider failed. Please try again.");
+    }
+  };
 
   const onSignInPress = async () => {
     if (!isLoaded) return;
 
     try {
-      const signInAttempt = await signIn.create({
-        identifier: emailAddress,
+      setAuthError(null);
+      const result = await signIn.create({
+        identifier: email,
         password,
       });
 
-      if (signInAttempt.status === "complete") {
-        await setActive({ session: signInAttempt.createdSessionId });
+      if (result.status === "complete") {
+        await setActive({ session: result.createdSessionId });
         router.replace("/");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
+      const first = err?.errors?.[0];
+      const code = first?.code as string | undefined;
+      const message = first?.message as string | undefined;
+      if (
+        code === "form_identifier_not_found" ||
+        code === "form_password_incorrect" ||
+        code === "identifier_not_found" ||
+        code === "invalid_credentials"
+      ) {
+        setAuthError("Invalid email or password.");
+      } else if (message) {
+        setAuthError(message);
+      } else {
+        setAuthError("Could not sign in. Please try again.");
+      }
     }
   };
 
   return (
     <View style={styles.screen}>
       <View style={styles.card}>
-        {/* Title */}
-        <Text style={styles.title}>Welcome back</Text>
-        <Text style={styles.subtitle}>
-          Sign in to continue to AuthFlow
+        {/* Header */}
+        <Text style={styles.title}>
+          Welcome to{"\n"}SmartNest login now!
         </Text>
 
         {/* Email */}
+        <Text style={styles.label}>Email</Text>
         <TextInput
-          autoCapitalize="none"
-          value={emailAddress}
-          placeholder="Email address"
-          placeholderTextColor="#9CA3AF"
-          onChangeText={setEmailAddress}
           style={styles.input}
+          autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
         />
 
         {/* Password */}
-        <TextInput
-          value={password}
-          placeholder="Password"
-          placeholderTextColor="#9CA3AF"
-          secureTextEntry
-          onChangeText={setPassword}
-          style={styles.input}
-        />
+        <Text style={styles.label}>Password</Text>
+        <View style={styles.passwordBox}>
+          <TextInput
+            style={{ flex: 1 }}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={setPassword}
+          />
+          <TouchableOpacity
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons
+              name={showPassword ? "eye" : "eye-off"}
+              size={20}
+              color="#9CA3AF"
+            />
+          </TouchableOpacity>
+        </View>
 
-        {/* Button */}
-        <TouchableOpacity onPress={onSignInPress} style={styles.button}>
-          <Text style={styles.buttonText}>Continue</Text>
+        {authError ? <Text style={styles.errorText}>{authError}</Text> : null}
+
+        {/* Remember / Forgot */}
+        <View style={styles.optionsRow}>
+          <TouchableOpacity
+            style={styles.remember}
+            onPress={() => setRemember(!remember)}
+          >
+            <Ionicons
+              name={remember ? "checkbox" : "square-outline"}
+              size={18}
+              color="#3B82F6"
+            />
+            <Text style={styles.rememberText}>Remember me</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity>
+            <Text style={styles.forgot}>Forget password?</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Login button */}
+        <TouchableOpacity style={styles.primaryBtn} onPress={onSignInPress}>
+          <Text style={styles.primaryText}>Login</Text>
         </TouchableOpacity>
+
+        {/* Divider */}
+        <Text style={styles.divider}>Or Sign in with</Text>
+
+        {/* OAuth */}
+        <View style={styles.socialRow}>
+          <TouchableOpacity
+            style={styles.socialBtn}
+            onPress={() => onOAuthPress(googleOAuth)}
+          >
+            <Ionicons name="logo-google" size={22} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.socialBtn}
+            onPress={() => onOAuthPress(microsoftOAuth)}
+          >
+            <Ionicons name="logo-windows" size={22} />
+          </TouchableOpacity>
+        </View>
+
+        {oauthError ? <Text style={styles.errorText}>{oauthError}</Text> : null}
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don’t have an account?</Text>
-          <Link href={"/(auth)/sign-up" as Href}>
+          <Text>Don’t have an account?</Text>
+          <Link href="/(auth)/sign-up">
             <Text style={styles.link}> Sign up</Text>
           </Link>
         </View>
@@ -86,61 +181,97 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: "#F9FAFB",
+    backgroundColor: "#EEF2F7",
     justifyContent: "center",
     padding: 24,
   },
   card: {
     backgroundColor: "#FFFFFF",
+    borderRadius: 26,
     padding: 24,
-    borderRadius: 16,
-    elevation: 3,
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "700",
-    color: "#111827",
-    marginBottom: 6,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: "#6B7280",
+    textAlign: "center",
     marginBottom: 20,
   },
+  label: {
+    fontSize: 13,
+    color: "#6B7280",
+    marginBottom: 6,
+  },
   input: {
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 10,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 16,
     padding: 14,
-    fontSize: 16,
-    color: "#111827",
     marginBottom: 14,
-    backgroundColor: "#FFFFFF",
   },
-  button: {
-    backgroundColor: "#2563EB",
-    paddingVertical: 14,
-    borderRadius: 10,
+  passwordBox: {
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: 4,
+    backgroundColor: "#F3F4F6",
+    borderRadius: 16,
+    paddingHorizontal: 14,
+    marginBottom: 14,
   },
-  buttonText: {
+  errorText: {
+    color: "#EF4444",
+    fontSize: 13,
+    marginBottom: 12,
+  },
+  optionsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 18,
+  },
+  remember: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  rememberText: {
+    marginLeft: 6,
+    fontSize: 13,
+    color: "#6B7280",
+  },
+  forgot: {
+    fontSize: 13,
+    color: "#3B82F6",
+  },
+  primaryBtn: {
+    backgroundColor: "#3B82F6",
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: "center",
+  },
+  primaryText: {
     color: "#FFFFFF",
     fontSize: 16,
     fontWeight: "600",
+  },
+  divider: {
+    textAlign: "center",
+    color: "#9CA3AF",
+    marginVertical: 18,
+  },
+  socialRow: {
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 18,
+  },
+  socialBtn: {
+    backgroundColor: "#F3F4F6",
+    padding: 14,
+    borderRadius: 16,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "center",
     marginTop: 18,
   },
-  footerText: {
-    color: "#6B7280",
-    fontSize: 14,
-  },
   link: {
-    color: "#2563EB",
+    color: "#3B82F6",
     fontWeight: "600",
-    fontSize: 14,
   },
 });
