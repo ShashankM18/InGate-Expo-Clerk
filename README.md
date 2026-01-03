@@ -1,50 +1,58 @@
-# Welcome to your Expo app 👋
+﻿# InGate – Expo (React Native)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A React Native app built with Expo and Expo Router.
 
-## Get started
+## Quick start (this project)
 
-1. Install dependencies
+1) Install dependencies
+bash:
+npm install 
 
-   ```bash
-   npm install
-   ```
 
-2. Start the app
+2) Configure environment (Clerk)
+Create a .env file in the project root and insert the Clerk publishable key of your application created in the Clerk dashboard:
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+Do not add server-only secrets (e.g., CLERK_SECRET_KEY) to this client app.
 
-   ```bash
-   npx expo start
-   ```
+3) Start the app
+bash:
+npx expo start --tunnel  #recommended
+or 
+npx expo start -c
+or
+npx expo start
 
-In the output, you'll find options to open the app in a
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
+4) Open the app
+- Press a to open Android emulator (Android Studio required)
+- Press i to open iOS simulator (macOS + Xcode)
+- Scan the QR with the Expo Go app on a mobile device
+- Press w to open in the web browser
 
-When you're ready, run:
+Notes:
+- File-based routing lives in the app/ directory (Expo Router).
+- A custom URL scheme myapp is configured for OAuth redirects.
+- The app will automatically reload when you save changes to code.
 
-```bash
-npm run reset-project
-```
+## Create a new Expo app (from scratch)
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+If you want to start a new native Expo app:
+bash:
+npx create-expo-app@latest my-app
+cd my-app
+npx expo start
 
-## Learn more
+Open it on device/emulator using the same options above.
 
-To learn more about developing your project with Expo, look at the following resources:
+## Useful scripts
+bash:
+npm run start   # Start dev server (alias of expo start)
+npm run android # Open Android emulator
+npm run ios     # Open iOS simulator (macOS only)
+npm run web     # Open in a web browser
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Troubleshooting
+- After editing .env, fully restart the dev server.
+- For Clerk in test mode, view email codes in Clerk Dashboard if no email provider is configured.
