@@ -43,9 +43,10 @@ Notes:
 ## Create a new Expo app (from scratch)
 
 If you want to start a new native Expo app:
-bash:
 npx create-expo-app@latest my-app
+
 cd my-app
+
 npx expo start
 
 Open it on device/emulator using the same options above.
