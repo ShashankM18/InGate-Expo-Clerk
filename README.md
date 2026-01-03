@@ -4,28 +4,32 @@ A React Native app built with Expo and Expo Router.
 
 ## Quick start (this project)
 
-1) Install dependencies
-bash:
+1) Install dependencies:
 npm install 
 
 
-2) Configure environment (Clerk)
-Create a .env file in the project root and insert the Clerk publishable key of your application created in the Clerk dashboard:
-EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+3) Configure environment (Clerk)
+Create a .env file in the project root and insert the Clerk publishable key of your application created in the Clerk dashboard which will be like : 
+EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_... 
 Do not add server-only secrets (e.g., CLERK_SECRET_KEY) to this client app.
 
-3) Start the app
-bash:
-npx expo start --tunnel  #recommended
+4) Start the app
+   
+
+npx expo start --tunnel       #recommended
+
 or 
+
 npx expo start -c
+
 or
+
 npx expo start
 
 
 
 
-4) Open the app
+5) Open the app
 - Press a to open Android emulator (Android Studio required)
 - Press i to open iOS simulator (macOS + Xcode)
 - Scan the QR with the Expo Go app on a mobile device
@@ -48,9 +52,9 @@ Open it on device/emulator using the same options above.
 
 ## Useful scripts
 bash:
-npm run start   # Start dev server (alias of expo start)
-npm run android # Open Android emulator
-npm run ios     # Open iOS simulator (macOS only)
+npm run start   # Start dev server (alias of expo start) and 
+npm run android # Open Android emulator  and  
+npm run ios     # Open iOS simulator (macOS only)  and  
 npm run web     # Open in a web browser
 
 ## Troubleshooting
