@@ -1,4 +1,4 @@
-﻿# InGate – Expo (React Native)
+﻿# InGate – Expo 
 
 A React Native app built with Expo and Expo Router.
 
